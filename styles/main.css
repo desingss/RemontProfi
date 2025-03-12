@@ -1433,7 +1433,7 @@ h1, h2, h3 {
 .contact-container {
   position: fixed;
   top: 85%;
-  left: 92%;
+  left: 90%;
   transform: translate(-50%, -50%);
   z-index: 1000;
 }
@@ -1480,3 +1480,4 @@ h1, h2, h3 {
 .telegram-circle {
   background-color: var(--color-animation);
 }
+

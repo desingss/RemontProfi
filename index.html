@@ -15,22 +15,12 @@
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/animations.css">
   <script src="https://unpkg.com/scrollreveal"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script type="module" src="js/main.js"></script>
-  <!-- Яндекс.Метрика -->
-<script type="text/javascript" >
-  (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-  m[i].l=1*new Date();
-  for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-  k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-  (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-  ym(XXXXXX, "init", {
-      clickmap:true,
-      trackLinks:true,
-      accurateTrackBounce:true
-  });
-</script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+  <script src="js/jQuery-Mask-Plugin-master/dist/jquery.mask.min.js"></script>
+  <script src="https://unpkg.com/imask"></script>
+  
 </head>
 <body>
 
@@ -409,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <section id="contact" class="contact">
     
-    <form id="contact-form" class="contact-form">
+    <form id="contact-form" class="contact-form" novalidate>
       <input type="hidden" name="csrf_token" value="7624020088:AAG0ObRSKSNt5UNlCp91RHDdG7a6xGKgGwo">
       <h2 style="color: white;">Связаться с Нами</h2>
       <div class="form-group">
@@ -421,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <label for="email">Email</label>
       </div>
       <div class="form-group">
-        <input type="tel" id="phone" required pattern="[0-9]{11}">
+        <input type="tel" id="phone" required>
         <label for="phone">Телефон</label>
       </div>
       <button type="submit" class="submit-btn">Отправить</button>
@@ -562,5 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
     <p>&copy; 2025 Ремонт-Профи163. Все права защищены.</p>
   </footer>
+
+  
 </body>
 </html>

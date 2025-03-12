@@ -1,3 +1,4 @@
+
 // Плавная прокрутка для навигационных ссылок
 document.addEventListener('click', (e) => {
   if (e.target.matches('a[href^="#"]')) {
@@ -43,125 +44,78 @@ Object.entries(revealConfig).forEach(([selector, config]) => {
 });
 
 // Обработка формы с отправкой в Telegram
-const contactForm = document.getElementById('contact-form');
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Инициализация маски для телефона
+  $('#phone').mask('+7 (000) 000-00-00', {
+    clearIfNotMatch: true,
+    onKeyPress: function(cep, e, field, options) {
+      console.log('Введенный номер:', cep.replace(/\D/g, '')); // Логирование ввода
+    }
+  });
 
-contactForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const btn = contactForm.querySelector('button');
-  const originalText = btn.textContent;
-  
-  // Проверка формата телефона
-  const phoneInput = document.getElementById('phone');
-  const phoneNumber = phoneInput.value.replace(/\D/g, '');
-  
-  if (phoneNumber.length !== 11) {
-    alert('Пожалуйста, введите корректный номер телефона (11 цифр)');
-    return;
-  }
+  // 2. Получаем форму
+  const contactForm = document.getElementById('contact-form');
 
-  // Получаем значения полей
-  const name = document.getElementById('name').value;
-const email = document.getElementById('email').value;
-const phone = document.getElementById('phone').value;
+  // 3. Обработчик отправки формы
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('Начало обработки формы...');
 
-// Экранирование данных перед вставкой
-const safeName = escapeHtml(name);
-const safeEmail = escapeHtml(email);
-const safePhone = escapeHtml(phone);
+   // 4. Получаем и валидируем данные
+let phone = $('#phone').cleanVal().replace(/\D/g, ''); // Замените const на let!
 
-function escapeHtml(str) {
-  return str.replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+// Автоматически добавляем код страны, если номер начинается с 9
+if (phone.startsWith('9') && phone.length === 10) {
+  phone = '7' + phone; // Делаем номер вида 79277717332
 }
 
+const name = document.getElementById('name').value.trim();
+const email = document.getElementById('email').value.trim();
 
-  // Формируем сообщение для Telegram
-  const message = `
-📩 Вам новая заявка:
-<b>Имя:</b> ${name}
-<b>Email:</b> ${email}
-<b>Телефон:</b> ${phone}
-  `;
-
-  // Параметры для отправки в Telegram
-
-  require('dotenv').config(); // Загружаем переменные из .env
-
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  
-  console.log('Токен бота:', botToken);
-  console.log('Chat ID:', chatId);
-
-  
-  const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-  try {
-    btn.style.transform = 'scale(0.95)';
-    btn.style.opacity = '0.8';
-    btn.textContent = 'Отправка...';
-    
-    const response = await fetch(telegramUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'HTML'
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('Ошибка при отправке сообщения');
+    // 5. Улучшенная валидация
+    if (!name || !phone) {
+      alert('Заполните обязательные поля (Имя и Телефон)!');
+      return;
     }
 
-    // Успешная отправка
-    btn.style.transform = 'scale(1.05)';
-    btn.style.opacity = '1';
-    btn.textContent = 'Отправлено!';
-    btn.style.backgroundColor = '#0056b3';
-    
-    // Очищаем форму
-    contactForm.reset();
-    
-    // Возвращаем исходное состояние кнопки
-    setTimeout(() => {
-      btn.style.transform = 'scale(1)';
-      btn.textContent = originalText;
-      btn.style.backgroundColor = '';
-    }, 2000);
+    if (phone.length !== 11) {
+      alert('Номер должен содержать 11 цифр в формате: +7 (XXX) XXX-XX-XX');
+      return;
+    }
 
-  } catch (error) {
-    console.error('Ошибка:', error);
-    alert('Произошла ошибка при отправке формы. Пожалуйста, попробуйте позже.');
-    
-    btn.style.transform = 'scale(1)';
-    btn.textContent = originalText;
-    btn.style.backgroundColor = '';
-  }
+    // 6. Собираем данные для отправки
+    const formData = {
+      name: name,
+      email: email,
+      phone: phone
+    };
+
+    try {
+      // 7. Отправка данных
+      const response = await fetch('http://localhost:3000/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      // 8. Обработка ответа
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const result = await response.json();
+      console.log('Ответ сервера:', result);
+
+      if (result.status === 'success') {
+        contactForm.reset();
+        alert('✅ Данные отправлены! Мы свяжемся с вами в течение 15 минут');
+      } else {
+        alert('❌ Ошибка: ' + (result.message || 'Неизвестная ошибка сервера'));
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('🚨 Ошибка соединения. Пожалуйста, попробуйте еще раз или позвоните нам');
+    }
+  });
 });
-
-// Маска для телефона
-const phoneInput = document.querySelector('input[name="phone"]');
-if (phoneInput && typeof IMask !== 'undefined') {
-  IMask(phoneInput, {
-    mask: '+{7} (000) 000-00-00',
-    lazy: false,
-    placeholderChar: '_'
-  });
-
-  phoneInput.addEventListener('input', () => {
-    const phone = phoneInput.value.replace(/\D/g, '');
-    phoneInput.setCustomValidity(phone.length === PHONE_NUMBER_LENGTH ? '' : 'Укажите корректный номер!');
-  });
-}
-
 
 
 // Before/After image comparison slider functionality
